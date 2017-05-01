@@ -84,9 +84,7 @@ function runManager()
 
 function runWorker()
 {
-    const redis = require('redis');    
-
-    const redisClient = redis.createClient(redisConfig);
+    const redisClient = require('redis').createClient(redisConfig);
     
     redisClient.on('error', (err) => 
     {
