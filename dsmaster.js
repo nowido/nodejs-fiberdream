@@ -5,10 +5,6 @@
 const token = process.argv[2] ? process.argv[2] : 'PI';
 
 //--------------------------------------------------
-
-const redis = require('redis');
-
-//--------------------------------------------------
 //*
 const redisHost = '127.0.0.1';
 const redisPort = '6379';
@@ -28,7 +24,7 @@ const workItemsCount = 4;
 
 //--------------------------------------------------
 
-const redisClient = redis.createClient(redisConfig);
+const redisClient = require('redis').createClient(redisConfig);
 
 redisClient.on('error', console.log);
 
@@ -117,6 +113,3 @@ function showStats(results, runTime)
 }
 
 //--------------------------------------------------
-
-
-
