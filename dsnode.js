@@ -127,8 +127,6 @@ function runWorker()
 
         var result = doWork(job);
 
-        console.log(`${result.value.estimation}`);
-
         process.send
         ({
             jobResult: {id: result.id, value: result.value.estimation}
