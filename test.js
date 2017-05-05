@@ -1,5 +1,4 @@
 const cluster = require('cluster');
-const http = require('http');
 const os = require('os');
 
 const cpus = os.cpus();
@@ -11,70 +10,96 @@ const pid = process.pid;
 const N = 100000000; // 100 millions of random points
 
 if(cluster.isMaster)
-{
+{  
   console.log(`Master ${pid} on ${cpu.model}, ${cpu.speed} MHz, ${numCPUs} logical CPUs`);
 
-  for (var i = 0; i < numCPUs; ++i) 
-  {
-    cluster.fork();
-  } 
+  forkWorkers(numCPUs);
 
   var startTime = Date.now();
 
-  cluster.on('exit', (worker, code, signal) => {
-    console.log(`worker ${worker.process.pid} exited.`);    
-  });     
+  var results = [];
 
-  var answersCount = 0;
-  var answers = {};
-
-  cluster.on('message', (worker, message, handle) => {
-
+  cluster.on('message', (worker, message, handle) => 
+  {
     var id = worker.process.pid;
 
-    console.log(`${id} : ${message}`);  
+    console.log(`Result from ${id} : ${message}`);  
 
-    answers[id] = message;
-    answersCount++;
-    
-    if(answersCount === numCPUs)
+    results.push(message);
+
+    if(results.length === numCPUs)
     {
-      var average = 0;
-
-      for(key in answers)
-      {
-        average += answers[key];
-      }
-
-      average /= numCPUs;
-
       var runTime = Math.round((Date.now() - startTime) / 10) / 100;
 
-      var gigaPoints = Math.round(N * numCPUs / runTime / 1e6) / 1e3;
-
-      console.log(`Monte-Carlo Pi = ${average} (run time: ${runTime} s, ${gigaPoints} Gpts/s)`);
+      showStats(results, runTime);
     }
   });
+
+  cluster.on('online', (worker, code, signal) => 
+  {    
+    console.log(`Worker ${worker.process.pid} is running`);  
+  });     
+  
+  cluster.on('exit', (worker, code, signal) => 
+  {
+    console.log(`Worker ${worker.process.pid} exited`);    
+  });       
 }
 else // if(cluster.isWorker)
-{
-  console.log(`Slave ${pid} running.`);
-  
-  var count = 0;
+{  
+  process.send(calcMonteCarloPi(N));
 
-  for (var i = 0; i < N; ++i)
-  {
-    var x = Math.random();
-    var y = Math.random();
-
-    if(x * x + y * y < 1)
-    {
-      ++count;
-    }
-  }
-
-  var piEstimation = 4 * count / N;
-
-  process.send(piEstimation);
   process.exit();
 }
+
+//--------------------------------------------------
+
+function forkWorkers(count)
+{
+  for (var i = 0; i < count; ++i) 
+  {
+    cluster.fork();
+  } 
+}
+
+//--------------------------------------------------
+
+function calcMonteCarloPi(pointsCount)
+{
+    var inCircleCount = 0;
+
+    for (var i = 0; i < pointsCount; ++i)
+    {
+        var x = Math.random();
+        var y = Math.random();
+
+        if(x * x + y * y < 1)
+        {
+            ++inCircleCount;
+        }
+    }
+
+    return 4 * inCircleCount / pointsCount;        
+}
+
+//--------------------------------------------------
+
+function showStats(results, runTime)
+{    
+    var average = 0;
+
+    var resultsCount = results.length;
+
+    for(var i = 0; i < resultsCount; ++i)
+    {
+        average += results[i];
+    }
+        
+    average /= resultsCount;
+
+    var gigaPoints = Math.round(N * resultsCount / runTime / 1e6) / 1e3;
+        
+    console.log(`Monte-Carlo Pi = ${average} (run time: ${runTime} s, ${gigaPoints} Gpts/s)`);
+}
+
+//--------------------------------------------------
