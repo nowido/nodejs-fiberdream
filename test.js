@@ -21,9 +21,7 @@ if(cluster.isMaster)
 
   cluster.on('message', (worker, message, handle) => 
   {
-    var id = worker.process.pid;
-
-    console.log(`Result from ${id} : ${message}`);  
+    console.log(`Result from ${worker.process.pid} : ${message}`);  
 
     results.push(message);
 
