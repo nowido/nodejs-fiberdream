@@ -5,17 +5,15 @@
 const token = process.argv[2] ? process.argv[2] : 'PI';
 
 //--------------------------------------------------
-//*
+/*
 const redisHost = '127.0.0.1';
 const redisPort = '6379';
-const redisConfig = {host: redisHost, port: redisPort};
-//*/
-/*
-const redisHost = 'redis-12559.c10.us-east-1-2.ec2.cloud.redislabs.com';
-const redisPort = '12559';
-const redisToken = '123456';
-const redisConfig = {host: redisHost, port: redisPort, password: redisToken};
 */
+//*
+const redisHost = 'redis-11923.c8.us-east-1-2.ec2.cloud.redislabs.com';
+const redisPort = '11923';
+//*/
+const redisConfig = {host: redisHost, port: redisPort};
 
 const jobQueueKey = 'job#' + token;
 const resultsQueueKey = 'results#' + token;
@@ -113,3 +111,6 @@ function showStats(results, runTime)
 }
 
 //--------------------------------------------------
+
+
+
