@@ -1,8 +1,9 @@
 // run this script with <unique token> to start Master for <unique token> processing
-
+// use second argument to specify work items count 
 //--------------------------------------------------
 
 const token = process.argv[2] ? process.argv[2] : 'PI';
+const workItemsCount = process.argv[3] ? Number.parseInt(process.argv[3]) : 4;
 
 //--------------------------------------------------
 /*
@@ -19,8 +20,6 @@ const jobQueueKey = 'job#' + token;
 const resultsQueueKey = 'results#' + token;
 
 const N = 100000000; // 100 millions of random test points
-
-const workItemsCount = 4;
 
 //--------------------------------------------------
 
