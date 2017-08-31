@@ -18,6 +18,8 @@ const redisConfig = {host: redisHost, port: redisPort};
 const jobQueueKey = 'job#' + token;
 const resultsQueueKey = 'results#' + token;
 
+const N = 100000000; // 100 millions of random test points
+
 const workItemsCount = 4;
 
 //--------------------------------------------------
@@ -32,7 +34,7 @@ console.log(`Master for ${workItemsCount} \'${token}\' items processing`);
 
 pushWorkItems(workItemsCount);
 
-var startTime = Date.now();
+const startTime = Date.now();
 
 var results = [];
 
@@ -44,7 +46,7 @@ gatherResults((result) =>
 
     if(results.length === workItemsCount)
     {
-        var runTime = Math.round((Date.now() - startTime) / 10) / 100;
+        const runTime = Math.round((Date.now() - startTime) / 10) / 100;
 
         console.log(`All ${workItemsCount} items done`);
 
@@ -62,7 +64,9 @@ function pushWorkItems(workItemsCount)
 {
     for(var i = 0; i < workItemsCount; ++i)
     {
-        redisClient.lpush(jobQueueKey, JSON.stringify({id: i}));
+        const task = {id: i, count: N};
+
+        redisClient.lpush(jobQueueKey, JSON.stringify(task));        
     }
 }
 
@@ -71,8 +75,10 @@ function pushWorkItems(workItemsCount)
 function gatherResults(onResultItem)
 {        
     function getResult(err, res)
-    {        
-        if(onResultItem(JSON.parse(res[1])))
+    {           
+        const result = JSON.parse(res[1]);
+
+        if(onResultItem(result))        
         {
             redisClient.brpop(resultsQueueKey, 0, getResult);   
         }
@@ -93,11 +99,11 @@ function showStats(results, runTime)
     var pointsCount = 0;
     var average = 0;
 
-    var itemsCount = results.length;
+    const itemsCount = results.length;
 
     for(var i = 0; i < itemsCount; ++i)
     {
-        var item = results[i];
+        const item = results[i];
 
         pointsCount += item.value.count;
         average += item.value.estimation;
