@@ -10,7 +10,7 @@ const cluster = require('cluster');
 
 const cpus = require('os').cpus();
 const cpu = cpus[0];
-const numCPUs = 2;//cpus.length;
+const numCPUs = cpus.length;
 
 const pid = process.pid;
 
@@ -71,7 +71,7 @@ function runManager()
         }
         else if(message.jobResult)
         {
-            var result = message.jobResult;
+            const result = message.jobResult;
 
             console.log(`job result: id=${result.id}, value=${result.value}`);
         }
@@ -95,8 +95,8 @@ function runWorker()
 
         for (var i = 0; i < pointsCount; ++i)
         {
-            var x = Math.random();
-            var y = Math.random();
+            const x = Math.random();
+            const y = Math.random();
 
             if(x * x + y * y < 1)
             {
@@ -109,7 +109,7 @@ function runWorker()
 
     function doWork(jobItem)
     {
-        const N = 100000000; // 100 millions of random test points
+        const N = jobItem.count;
 
         return {            
             id: jobItem.id, 
@@ -119,16 +119,16 @@ function runWorker()
 
     function getJob(err, res)
     {
-        var job = JSON.parse(res[1]);
+        const job = JSON.parse(res[1]);        
 
-        var result = doWork(job);
+        const result = doWork(job);
 
         process.send
         ({
             jobResult: {id: result.id, value: result.value.estimation}
         });            
             
-        redisClient.lpush(resultsQueueKey, JSON.stringify(result));
+        redisClient.lpush(resultsQueueKey, JSON.stringify(result));        
 
         redisClient.brpop(jobQueueKey, 0, getJob);   
     }
@@ -137,3 +137,4 @@ function runWorker()
 }
 
 //--------------------------------------------------
+
